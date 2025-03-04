@@ -1,0 +1,39 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "typescript",
+      "camelcase": "Typescript",
+      "title": "Typescript",
+      "scope": "source.typescript",
+      "file-types": [
+        "typescript"
+      ],
+      "injection-regex": "^typescript$",
+      "class-name": "TreeSitterTypescript"
+    }
+  ],
+  "metadata": {
+    "version": "0.0.1",
+    "license": "MIT",
+    "description": "Typescript grammar rules generated from Typescript compiler developed by Microsoft.",
+    "authors": [
+      {
+        "name": "FXTi",
+        "email": "fx.ti@outlook.com"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/FXTi/tree-sitter-typescript"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true,
+    "zig": false
+  }
+}
