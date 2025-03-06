@@ -15,7 +15,7 @@ module.exports = grammar({
     $._template_chars,
     $._ternary_qmark,
     $.html_comment,
-    '||',
+    '||', // DO NOT REMOVE, OR RULES WILL BREAK, BELIEVE ME!!!
     $.escape_sequence,
     $.regex_pattern,
     $.jsx_text,
@@ -25,14 +25,6 @@ module.exports = grammar({
     $.comment,
     $.html_comment,
     /[\s\p{Zs}\uFEFF\u2028\u2029\u2060\u200B]/,
-  ],
-
-  supertypes: $ => [
-    $.statement,
-    $.declaration,
-    $.expression,
-    $.primary_expression,
-    $.pattern,
   ],
 
   inline: $ => [
@@ -111,10 +103,6 @@ module.exports = grammar({
 
     hash_bang_line: _ => /#!.*/,
 
-    //
-    // Export declarations
-    //
-
     export_statement: $ => choice(
       seq(
         'export',
@@ -131,13 +119,13 @@ module.exports = grammar({
           field('declaration', $.declaration),
           seq(
             'default',
-            choice(
+            field('default', choice(
               field('declaration', $.declaration),
               seq(
                 field('value', $.expression),
                 $._semicolon,
               ),
-            ),
+            )),
           ),
         ),
       ),
@@ -151,15 +139,11 @@ module.exports = grammar({
     ),
 
     export_specifier: $ => seq(
-      field('name', $._module_export_name),
+      field('name', $.identifier),
       optional(seq(
         'as',
-        field('alias', $._module_export_name),
+        field('alias', $.identifier),
       )),
-    ),
-
-    _module_export_name: $ => choice(
-      $.identifier,
     ),
 
     declaration: $ => choice(
@@ -169,10 +153,6 @@ module.exports = grammar({
       $.lexical_declaration,
       $.variable_declaration,
     ),
-
-    //
-    // Import declarations
-    //
 
     import: _ => token('import'),
 
@@ -218,15 +198,11 @@ module.exports = grammar({
     import_specifier: $ => choice(
       field('name', $.identifier),
       seq(
-        field('name', $._module_export_name),
+        field('name', $.identifier),
         'as',
         field('alias', $.identifier),
       ),
     ),
-
-    //
-    // Statements
-    //
 
     statement: $ => choice(
       $.export_statement,
@@ -413,10 +389,6 @@ module.exports = grammar({
       field('body', $.statement),
     )),
 
-    //
-    // Statement components
-    //
-
     switch_body: $ => seq(
       '{',
       repeat(choice($.switch_case, $.switch_default)),
@@ -453,9 +425,6 @@ module.exports = grammar({
       ')',
     ),
 
-    //
-    // Expressions
-    //
     _expressions: $ => choice(
       $.expression,
       $.sequence_expression,
@@ -573,9 +542,6 @@ module.exports = grammar({
       field('close_tag', $.jsx_closing_element),
     ),
 
-    // An entity can be named, numeric (decimal), or numeric (hexadecimal). The
-    // longest entity name is 29 characters long, and the HTML spec says that
-    // no more will ever be added.
     html_character_reference: _ => /&(#([xX][0-9a-fA-F]{1,6}|[0-9]{1,5})|[A-Za-z]{1,30});/,
 
     jsx_expression: $ => seq(
@@ -669,13 +635,8 @@ module.exports = grammar({
       ),
     ),
 
-    // Workaround to https://github.com/tree-sitter/tree-sitter/issues/1156
-    // We give names to the token() constructs containing a regexp
-    // so as to obtain a node in the CST.
-    //
     unescaped_double_jsx_string_fragment: _ => token.immediate(prec(1, /([^"&]|&[^#A-Za-z])+/)),
 
-    // same here
     unescaped_single_jsx_string_fragment: _ => token.immediate(prec(1, /([^'&]|&[^#A-Za-z])+/)),
 
     _jsx_attribute_value: $ => choice(
@@ -748,7 +709,6 @@ module.exports = grammar({
       )),
     ),
 
-    // Override
     _call_signature: $ => field('parameters', $.formal_parameters),
     _formal_parameter: $ => choice($.pattern, $.assignment_pattern),
 
@@ -881,10 +841,6 @@ module.exports = grammar({
 
     sequence_expression: $ => prec.right(sepBy(',', $.expression)),
 
-    //
-    // Primitives
-    //
-
     string: $ => choice(
       seq(
         '"',
@@ -904,13 +860,8 @@ module.exports = grammar({
       ),
     ),
 
-    // Workaround to https://github.com/tree-sitter/tree-sitter/issues/1156
-    // We give names to the token() constructs containing a regexp
-    // so as to obtain a node in the CST.
-    //
     unescaped_double_string_fragment: _ => token.immediate(prec(1, /[^"\\\r\n]+/)),
 
-    // same here
     unescaped_single_string_fragment: _ => token.immediate(prec(1, /[^'\\\r\n]+/)),
 
     escape_sequence: _ => token.immediate(seq(
@@ -925,7 +876,6 @@ module.exports = grammar({
       ),
     )),
 
-    // http://stackoverflow.com/questions/13014947/regex-to-match-a-c-style-multiline-comment/36328890#36328890
     comment: _ => token(choice(
       seq('//', /[^\r\n\u2028\u2029]*/),
       seq(
@@ -963,13 +913,13 @@ module.exports = grammar({
         seq(
           '[',
           repeat(choice(
-            seq('\\', /./), // escaped character
-            /[^\]\n\\]/, // any character besides ']' or '\n'
+            seq('\\', /./),
+            /[^\]\n\\]/,
           )),
           ']',
-        ), // square-bracket-delimited character class
-        seq('\\', /./), // escaped character
-        /[^/\\\[\n]/, // any character besides '[', '\', '/', '\n'
+        ),
+        seq('\\', /./),
+        /[^/\\\[\n]/,
       )),
     )),
 
@@ -1009,11 +959,6 @@ module.exports = grammar({
       ));
     },
 
-    // 'undefined' is syntactically a regular identifier in JavaScript.
-    // However, its main use is as the read-only global variable whose
-    // value is [undefined], for which there's no literal representation
-    // unlike 'null'. We gave it its own rule so it's easy to
-    // highlight in text editors and other applications.
     _identifier: $ => choice(
       $.undefined,
       $.identifier,
@@ -1034,10 +979,6 @@ module.exports = grammar({
     false: _ => 'false',
     null: _ => 'null',
     undefined: _ => 'undefined',
-
-    //
-    // Expression components
-    //
 
     arguments: $ => seq(
       '(',
@@ -1060,9 +1001,6 @@ module.exports = grammar({
       ')',
     ),
 
-    // This negative dynamic precedence ensures that during error recovery,
-    // unfinished constructs are generally treated as literal expressions,
-    // not patterns.
     pattern: $ => prec.dynamic(-1, choice(
       $._lhs_expression,
       $.rest_pattern,
