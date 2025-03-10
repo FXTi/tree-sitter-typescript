@@ -51,7 +51,6 @@ module.exports = grammar({
       'call',
       $.update_expression,
       'unary_void',
-      'binary_exp',
       'binary_times',
       'binary_plus',
       'binary_shift',

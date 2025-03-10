@@ -5825,10 +5825,6 @@
       },
       {
         "type": "STRING",
-        "value": "binary_exp"
-      },
-      {
-        "type": "STRING",
         "value": "binary_times"
       },
       {
